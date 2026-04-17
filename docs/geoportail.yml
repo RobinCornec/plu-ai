@@ -1,0 +1,1566 @@
+openapi: 3.0.0
+info:
+  title: "API Géoportail de l'Urbanisme"
+  version: "v6.0.32"
+  description: |
+    Cette API répond avant tout à un usage interne au Géoportail de l'urbanisme. Pour d'autres besoins:
+    - Utilisez l'[API Carto](https://apicarto.ign.fr/api/doc/gpu) pour des fonctionnalités d'interrogation géographique avancées
+    - Consultez les [exports mis à disposition](/services/) pour les besoins de téléchargement massif
+
+servers:
+  - url: /api/
+  - url: https://www.geoportail-urbanisme.gouv.fr/api/
+
+paths:
+#--- DOCUMENT ---
+#----------------
+#--- DOCUMENT ---
+#----------------
+  /document:
+    get:
+      tags: [Document]
+      summary: "Renvoie une liste de documents filtrées en fonction des paramètres."
+      parameters:
+        - name: documentFamily
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [DU, PSMV, SUP, SCoT]
+          useBrackets: true
+          description: "Famille du document (DU=Documents d'Urbanisme, PSMV=Plans de Sauvegarde et de Mise en Valeur, SUP=Servitudes d'Utilité Publique, SCoT=Schémas de Cohérence Territoriale)"
+        - name: documentType
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [POS, CC, PLU, PLUi, PSMV, SUP, SCoT]
+          useBrackets: true
+          description: "Type de document (POS=Plan d'Occupation des Sols, CC=Carte Communale, PLU=Plan Local d'Urbanisme, PLUi=PLU Intercommunal, PSMV=Plan de Sauvegarde et de Mise en Valeur, SUP=Servitudes d'Utilité Publique, SCoT=Schéma de Cohérence Territoriale)"
+        - name: originalName
+          in: query
+          schema:
+            type: string
+            pattern: '^[0-9]{5}_[A-Z]+_[0-9]{8}$'
+          description: "Nom original du document au format [code_insee]_[type]_[date]"
+        - name: partition
+          in: query
+          schema:
+            type: string
+          description: Partition du Document
+        - name: supCategory
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+              pattern: '^[A-Z]{1,3}[0-9]{1,2}(bis)?$'
+          useBrackets: true
+          description: "Catégorie de Servitude d'Utilité Publique (format [lettre(s)][chiffre][bis?])"
+          example: ["AC4bis","INT1","A9"]
+        - name: gridName
+          in: query
+          schema:
+            type: string
+          description: Maillage du Document
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [document.production, document.deleted]
+          description: "Statut de traitement du document"
+          example: "document.production"
+        - name: legalStatus
+          in: query
+          schema:
+            type: string
+            enum: [APPROVED, PENDING, REJECTED, UNKNOWN]
+          description: "Statut légal du document (opposabilité)"
+        - name: fileIdentifier
+          in: query
+          schema:
+            type: string
+            pattern: '^GPU-[a-f0-9]{32}$'
+          description: "Identifiant de la fiche de métadonnées au format GPU-[hash]"
+        - name: uploadedAfter
+          in: query
+          schema:
+            type: string
+            pattern: '^(\d{8})( (\d{2}):(\d{2}):(\d{2}))?$'
+          description: "Filtre les documents téléversés après cette date (format YYYYMMDD ou YYYYMMDD hh:mm:ss)"
+          example: "20230101"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: "Numéro de la page (commence à 0)"
+          example: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 20
+          description: "Nombre d'objets par page (maximum 1000)"
+          example: 10
+      responses:
+        '200':
+          description: Returned when successful
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Document'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+
+#------------------------
+#--- DOCUMENT ARCHIVE ---
+#------------------------
+  /document/{documentId}/download:
+    get:
+      tags: [Document]
+      summary: Télécharge l'archive du document (Non testable dans la documentation)
+      parameters:
+        - $ref: '#/components/parameters/pathDocumentId'
+      responses:
+        '200':
+          description: L'archive du document
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          description: Le document n'est pas disponible au téléchargement
+
+#------------------------
+#--- DOCUMENT DETAILS ---
+#------------------------
+  /document/{documentId}/details:
+    get:
+      tags: [Document]
+      summary: Renvoie les informations détaillées sur un document.
+      parameters:
+        - $ref: '#/components/parameters/pathDocumentId'
+      responses:
+        '200':
+          description: Returned when successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentWithDetails"
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+#----------------------
+#--- DOCUMENT FILES ---
+#----------------------
+  /document/{documentId}/files:
+    get:
+      tags: [Document]
+      summary: Renvoie la liste des pièces écrites d'un document.
+      parameters:
+        - $ref: '#/components/parameters/pathDocumentId'
+      responses:
+        '200':
+          description: Returned when successful
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DocumentFileInfo"
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+#---------------------
+#--- DOCUMENT FILE ---
+#---------------------
+  /document/{documentId}/files/{fileName}:
+    get:
+      tags: [Document]
+      summary: Télécharge un pièce écrite du document (Non testable dans la documentation)
+      parameters:
+        - $ref: '#/components/parameters/pathDocumentId'
+        - name: fileName
+          required: true
+          in: path
+          schema:
+              type: string
+      responses:
+        '200':
+          description: Returned when successful
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    
+#-------------------------
+#--- DOCUMENT METADATA ---
+#-------------------------
+  /document/{documentId}/metadata.xml:
+    get:
+      tags: [Document]
+      summary: Télécharge la fiche de métadonnées d'un document.
+      parameters:
+        - $ref: '#/components/parameters/pathDocumentId'
+      responses:
+        '200':
+          description: Returned when successful
+          content:
+            application/xml:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
+#-----------------------------
+#--- DOCUMENT DOWNLOAD BY PARTITION ---
+#-----------------------------
+  /document/download-by-partition/{partition}:
+    get:
+      tags: [Document]
+      summary: Télécharge l'archive du document d'après sa partition (Non testable dans la documentation)
+      parameters:
+        - partition:
+          name: partition
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: L'archive du document
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Le document n'est pas disponible au téléchargement
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+#-----------------------------
+#--- DOCUMENT DOWNLOAD FILE BY PARTITION ---
+#-----------------------------
+  /document/download-by-partition/{partition}/file/{filename}:
+    get:
+      tags: [Document]
+      summary: Télécharge une pièce écrite du document d'après sa partition (Non testable dans la documentation)
+      parameters:
+        - name: partition
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: filename
+          required: true
+          in: path
+          schema:
+              type: string
+      responses:
+        '200':
+          description: "Fichier téléchargé avec succès"
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: "Le document n'est pas disponible au téléchargement"
+        '404':
+          $ref: '#/components/responses/NotFound'
+#--- PROCEDURE ---
+#----------------
+#--- PROCEDURE ---
+#----------------
+  /{gridName}/procedures:
+    get:
+      tags: [Procedure]
+      summary: "Renvoie une liste de procédure filtrées en fonction des paramètres."
+      parameters:
+        - $ref: '#/components/parameters/pathGridName'
+        - name: name
+          in: query
+          schema:
+            type: string
+          description: Nom de la procédure
+        - name: inseeOrSiren
+          in: query
+          schema:
+            type: string
+          description: Code insee ou siren du maillage du document lié à la procédure
+        - name: documentType
+          in: query
+          schema:
+            type: string
+            enum: [PLU, POS, CC, PLUi, PSMV, SCoT]
+          description: "Type du document lié à la procédure"
+          example: "PLU"
+        - name: documentName
+          in: query
+          schema:
+            type: string
+            pattern: '^[0-9]{5}_[A-Z]+_[0-9]{8}$'
+          description: "Nom du document lié à la procédure"
+          example: "95197_PLU_20200121"
+        - name: procedureType
+          in: query
+          schema:
+            type: string
+            enum: [E, R, RA, M, MS, MEC, MAJ]
+          description: "Type de procédure selon le standard CNIG"
+          example: "M"
+        - name: procedureNumber
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+          description: "Numéro de la procédure (1 dans MS1, 2 dans RA2)"
+          example: 1
+        - name: approbedAfter
+          in: query
+          schema:
+            type: string
+            pattern: '^(\d{8})( (\d{2}):(\d{2}):(\d{2}))?$'
+          description: "Filtre les procédures approuvées après cette date (format YYYYMMDD ou YYYYMMDD hh:mm:ss)"
+          example: "20230101"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: "Numéro de la page (commence à 1)"
+          example: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 20
+          description: "Nombre d'objets par page (maximum 1000)"
+          example: 20
+      responses:
+        '200':
+          description: Returned when successful
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Procedure"
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+
+  /{gridName}/procedures/{procedureName}:
+    get:
+      tags: [Procedure]
+      summary: "Téléchargement d'une archive zip contenant tous les documents d'une procédure."
+      parameters:
+        - $ref: '#/components/parameters/pathGridName'
+        - name: procedureName
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9]{5}_[A-Z]+_[A-Z0-9]+_[0-9]{8}$'
+          description: "Nom de la procédure au format [code_insee]_[type_doc]_[type_proc]_[date]"
+          example: "95197_PLU_M1_20200121"
+      responses:
+        '200':
+          description: "Zip file"
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+                format: binary
+                description: "PDF zip files"
+                example: attachment; filename="95197_PLU_M_20200121"
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+#--- FEATURE-INFO ---
+  /feature-info/du:
+    get:
+      tags: [GetFeature]
+      summary: "Renvoie une liste de features filtrées en fonction des paramètres."
+      parameters:
+        - $ref: '#/components/parameters/lon'
+        - $ref: '#/components/parameters/lat'
+        - $ref: '#/components/parameters/parcelId'
+        - name: typeName
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [document, municipality, info_lin, info_pct, info_surf, prescription_lin, prescription_pct, prescription_surf, secteur_cc, zone_urba]
+          description: "Type de feature pour les Documents d'Urbanisme (DU)"
+          example: "zone_urba"
+        - $ref: '#/components/parameters/partition'
+        - $ref: '#/components/parameters/zone'
+      responses:
+        '200':
+          description: Returned when successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureCollection'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /feature-info/sup:
+    get:
+      tags: [GetFeature]
+      summary: "Renvoie une liste de features filtrées en fonction des paramètres."
+      parameters:
+        - $ref: '#/components/parameters/lon'
+        - $ref: '#/components/parameters/lat'
+        - $ref: '#/components/parameters/parcelId'
+        - name: typeName
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [assiette_sup_p, assiette_sup_l, assiette_sup_s]
+          description: "Type de feature pour les Servitudes d'Utilité Publique (SUP)"
+          example: "assiette_sup_p"
+        - $ref: '#/components/parameters/partition'
+        - $ref: '#/components/parameters/zone'
+      responses:
+        '200':
+          description: Returned when successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureCollection'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /feature-info/scot:
+    get:
+      tags: [GetFeature]
+      summary: "Renvoie une liste de features filtrées en fonction des paramètres."
+      parameters:
+        - $ref: '#/components/parameters/lon'
+        - $ref: '#/components/parameters/lat'
+        - $ref: '#/components/parameters/parcelId'
+        - name: typeName
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [scot]
+          description: "Type de feature pour les Schémas de Cohérence Territoriale (SCoT)"
+          example: "scot"
+        - $ref: '#/components/parameters/partition'
+        - $ref: '#/components/parameters/zone'
+      responses:
+        '200':
+          description: Returned when successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureCollection'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /feature-info/parcel/{parcelId}/:
+    get:
+      tags: [GetFeature]
+      summary: "Renvoie une liste de features intersectées par une parcelle."
+      parameters:
+        - name: parcelId
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9]{2}_[0-9]{3}_[0-9]{3}_[0-9]{3}_[A-Z0-9]{2}_[0-9]{4}$'
+          description: "Identifiant de parcelle au format [code_dep]_[code_com]_[code_arr]_[com_abs]_[section]_[numero]"
+          example: "77_443_000_000_AB_0001"
+      responses:
+        '200':
+          description: Returned when successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureCollection'
+        '404':
+          $ref: '#/components/responses/NotFound'
+#--- GRID ---
+  /grid/:
+    get:
+      tags: [Grid]
+      summary: "Liste de maillages"
+      description: "Renvoie la liste des maillages avec possibilité de filtrage et de pagination. Les attributs null ne sont pas renvoyés."
+      parameters:
+        - name: name
+          in: query
+          required: false
+          description: "Nom du maillage: code région pour les région, code département pour les départements, code insee pour les communes. Pour les scot : scot_ + numéro SIREN et pour les epci : numéro SIREN. "
+          useBrackets: true
+          schema:
+            type: string
+        - name: title
+          in: query
+          required: false
+          description: "Titre du maillage."
+          useBrackets: true
+          schema:
+            type: string
+        - name: type
+          in: query
+          required: false
+          description: "Type de maillage ; string (?type=municipality) ou array (?type[]=municipality&type[]=departement)."
+          useBrackets: true
+          schema:
+            type: array
+            items:
+              type: string
+              enum: ["state", "region", "departement", "municipality", "epci", "scot"]
+              style: form
+              explode: true
+            example: ["municipality", "departement"]
+        - name: deleted
+          in: query
+          required: false
+          description: "Maillage supprimé ou non"
+          schema:
+            type: boolean
+          example: false
+        - name: rnu
+          in: query
+          required: false
+          description: "Maillage soumis au réglement national d'urbanisme ou non"
+          schema:
+            type: boolean
+          example: false
+        - name: approved
+          in: query
+          required: false
+          description: "Pour les maillages de type scot ayant un document approuvé non"
+          schema:
+            type: boolean
+          example: false
+        - name: _limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 10
+          description: "Nombre maximum de résultats à retourner"
+          example: 10
+        - name: _offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: "Nombre de résultats à ignorer (pour la pagination)"
+          example: 0
+        - name: _fields
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum: ["name", "title", "type", "deleted", "rnu", "approved"]
+            uniqueItems: true
+          style: form
+          explode: false
+          description: "Champs à retourner"
+          example: ["name", "title", "type"]
+      responses:
+        '200':
+          description: "Liste des maillages retournée avec succès"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Grid'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /grid/{gridName}:
+    get:
+      tags: [Grid]
+      summary: "Détails d'un maillage."
+      description: "Renvoie un maillage avec possibilité de filtrage au besoin. Les attributs null ne sont pas renvoyés. La géométrie du maillage est présente."
+      parameters:
+        - $ref: '#/components/parameters/pathGridName'
+        - name: _fields
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [ "name", "title", "type", "geometry", "deleted", "rnu", "approved"]
+            uniqueItems: true
+          style: form
+          explode: false
+          description: "Champs à retourner"
+          example: ["name", "title", "type", "geometry"]
+      responses:
+        '200':
+          description: "Détails du maillage retournés avec succès"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Grid'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /grid/{gridName}/parents:
+    get:
+      tags: [Grid]
+      summary: "Parents d'un maillage"
+      description: "Renvoie la liste des maillages parents d'un maillage spécifique"
+      parameters:
+        - $ref: '#/components/parameters/pathGridName'
+      responses:
+        '200':
+          description: "Liste des maillages parents retournée avec succès"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Grid'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /grid/{gridName}/children:
+    get:
+      tags: [Grid]
+      summary: "Enfants d'un maillage"
+      description: "Renvoie la liste des maillages enfants d'un maillage spécifique"
+      parameters:
+        - $ref: '#/components/parameters/pathGridName'
+      responses:
+        '200':
+          description: "Liste des maillages enfants retournée avec succès"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Grid'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /grid/{gridName}/projection:
+    get:
+      tags: [Grid]
+      summary: "Projection légale d'un maillage"
+      description: "Renvoie la projection légale associée à un maillage spécifique"
+      parameters:
+        - $ref: '#/components/parameters/pathGridName'
+      responses:
+        '200':
+          description: "Projection légale retournée avec succès"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Projection'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+#--- STANDARD ---
+  /standard:
+    get:
+      tags: [Standard]
+      summary: "Renvoie une liste de modèles de documents (standards) avec filtrage"
+      description: "Retourne la liste des modèles de documents CNIG disponibles avec possibilité de filtrer par type et statut abstrait. Ces modèles définissent la structure des données d'urbanisme."
+      parameters:
+        - name: abstract
+          in: query
+          schema:
+            type: boolean
+          description: "Filtre les modèles selon leur statut abstrait (true=modèles abstraits, false=modèles concrets)"
+          example: false
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [PLU, POS, CC, PLUi, SCoT, SUP, PSMV]
+          description: "Filtre les modèles par type de document d'urbanisme"
+          example: "PLU"
+      responses:
+        '200':
+          description: "Liste des modèles de documents retournée avec succès"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentModelSummary'
+              example:
+                - id: 1
+                  name: "cnig_PLU_2013"
+                  title: "Plan Local d'Urbanisme"
+                  description: "Modèle CNIG pour les PLU"
+                  abstract: false
+                  type: "PLU"
+                  parent:
+                    id: 2
+                    name: "cnig_PLU_2012"
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+
+  /standard/{documentModel}:
+    get:
+      tags: [Standard]
+      summary: "Renvoie les informations détaillées d'un modèle de document"
+      description: "Retourne les informations complètes d'un modèle de document CNIG spécifique identifié par son nom, incluant tous ses types de features et attributs."
+      parameters:
+        - name: documentModel
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^cnig_[A-Z]+_[0-9]{4}$'
+          description: "Nom du modèle de document CNIG au format cnig_[TYPE]_[ANNEE]"
+          example: "cnig_PLU_2013"
+      responses:
+        '200':
+          description: "Modèle de document retourné avec succès"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentModel'
+              example:
+                id: 1
+                name: "cnig_PLU_2013"
+                title: "Plan Local d'Urbanisme"
+                description: "Modèle CNIG pour les PLU"
+                abstract: false
+                parent:
+                  id: 2
+                  name: "cnig_PLU_2012"
+                featureTypes:
+                  - name: "DOC_URBA_COM"
+                    title: "Document d'urbanisme communal"
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /standard/{documentModel}/{featureTypeName}:
+    get:
+      tags: [Standard]
+      summary: "Renvoie les informations d'un type de feature spécifique."
+      description: "Retourne les détails d'un type de feature (table) dans un modèle de document donné."
+      parameters:
+        - name: documentModel
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^cnig_[A-Z]+_[0-9]{4}$'
+          description: "Nom du modèle de document CNIG au format cnig_[TYPE]_[ANNEE]"
+          example: "cnig_PLU_2013"
+        - name: featureTypeName
+          in: path
+          required: true
+          schema:
+            type: string
+          description: "Nom du type de feature (table) dans le modèle de document"
+          example: "DOC_URBA_COM"
+      responses:
+        '200':
+          description: "Type de feature retourné avec succès"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureType'
+              example:
+                name: "DOC_URBA_COM"
+                title: "Document d'urbanisme communal"
+                description: "Table des documents d'urbanisme communaux"
+                attributes:
+                  - name: "ID_DOC_URBA"
+                    title: "Identifiant du document"
+                    type: "string"
+        '404':
+          $ref: '#/components/responses/NotFound'
+  #--- DOCUMENT SUP CATEGORIES ---
+  /standard/sup-categories:
+    get:
+      tags: [Standard]
+      summary: "Renvoie la liste des catégories de Servitudes d'Utilité Publique (SUP)"
+      description: "Retourne toutes les catégories de SUP disponibles dans le système"
+      responses:
+        '200':
+          description: "Liste des catégories SUP retournée avec succès"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SupCategorie"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+#--- DOCUMENT DU CATEGORIES ---
+  /standard/du-categories:
+    get:
+      tags: [Standard]
+      summary: "Renvoie la liste des catégories de Documents d'Urbanisme (DU)"
+      description: "Retourne toutes les catégories de DU disponibles dans le système"
+      responses:
+        '200':
+          description: "Liste des catégories DU retournée avec succès"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DuCategorie"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+#--- ACTES ---
+#--- HEALTH ---
+
+#--- DEFINITIONS ---
+components:
+  parameters:
+    pathGridName:
+      name: gridName
+      in: path
+      required: true
+      schema:
+        type: string
+      description: "Nom du maillage"
+      example: "75"
+    pathDocumentId:
+      name: documentId
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^[a-f0-9]{32}$'
+      description: "Identifiant unique du document (32 caractères hexadécimaux)"
+      example: "a1b2c3d4e5f6789012345678901234ab"
+    gridName:
+      name: gridName
+      in: query
+      schema:
+        type: string
+      description: "Nom du maillage"
+    lon:
+      name: lon
+      in: query
+      schema:
+        type: number
+        format: float
+        minimum: -180
+        maximum: 180
+      description: "Longitude en degrés décimaux (WGS84)"
+      example: 3.396492
+    lat:
+      name: lat
+      in: query
+      schema:
+        type: number
+        format: float
+        minimum: -90
+        maximum: 90
+      description: "Latitude en degrés décimaux (WGS84)"
+      example: 45.71445
+    parcelId:
+      name: parcelId
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '^[0-9]{2}_[0-9]{3}_[0-9]{3}_[0-9]{3}_[A-Z0-9]{2}_[0-9]{4}$'
+      description: "Identifiant de parcelle au format [code_dep]_[code_com]_[code_arr]_[com_abs]_[section]_[numero]"
+      example: "77_443_000_000_AB_0001"
+    partition:
+      name: partition
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Partition du document
+    zone:
+      name: zone
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: ["validation", "production"]
+        default: "production"
+      description: "Zone de données (validation pour les données en cours de validation, production pour les données validées)"
+      example: "production"
+    
+    
+
+  responses:
+
+    # réponses génériques
+    NotFound:
+      description: "Ressource non trouvée"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Not Found"
+              message:
+                type: string
+                example: "La ressource demandée n'existe pas"
+              code:
+                type: integer
+                example: 404
+    Unauthorized:
+      description: "Accès non autorisé"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Unauthorized"
+              message:
+                type: string
+                example: "Authentification requise"
+              code:
+                type: integer
+                example: 401
+    InvalidRequest:
+      description: "Requête invalide"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Bad Request"
+              message:
+                type: string
+                example: "Paramètres de requête invalides"
+              code:
+                type: integer
+                example: 400
+              details:
+                type: array
+                items:
+                  type: string
+                example: ["Le paramètre 'id' est requis", "Format de date invalide"]
+    TooManyRequests:
+      description: "Limite de taux dépassée"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Too Many Requests"
+              message:
+                type: string
+                example: "Limite de requêtes dépassée"
+              code:
+                type: integer
+                example: 429
+              retryAfter:
+                type: integer
+                description: "Nombre de secondes à attendre avant de réessayer"
+                example: 60
+    InternalServerError:
+      description: "Erreur interne du serveur"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Internal Server Error"
+              message:
+                type: string
+                example: "Une erreur interne s'est produite"
+              code:
+                type: integer
+                example: 500
+    Forbidden:
+      description: "Accès interdit"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Forbidden"
+              message:
+                type: string
+                example: "Accès interdit à cette ressource"
+              code:
+                type: integer
+                example: 403
+
+  schemas:
+    Document:
+      type: object
+      description: 'Document avec informations de base'
+      required: [id, originalName, type, status, name, grid, uploadDate]
+      properties:
+        id:
+          type: string
+          pattern: '^[a-f0-9]{32}$'
+          description: 'Identifiant unique généré par le GPU pour chaque téléversement (32 caractères hexadécimaux)'
+          example: "a1b2c3d4e5f6789012345678901234ab"
+        originalName:
+          type: string
+          pattern: '^[0-9]{5}_[A-Z]+_[0-9]{8}$'
+          description: 'Nom original du dossier de téléversement'
+          example: "77443_PLU_20171007"
+        type:
+          type: string
+          enum: [POS, CC, PLU, PLUi, PSMV, SUP, SCoT]
+          description: 'Type de document d''urbanisme'
+          example: "PLU"
+        supCategory:
+          $ref: '#/components/schemas/SupCategorie'
+        status:
+          type: string
+          description: 'État du document au sens des traitements et de la publication'
+          example: "document.production"
+        statusDate:
+          type: string
+          format: date-time
+          description: 'Date et heure du dernier changement de statut (ISO 8601)'
+          example: "2023-01-01T10:10:10Z"
+        legalStatus:
+          type: string
+          enum: [APPROVED, PENDING, REJECTED, UNKNOWN]
+          description: 'Statut légal (opposabilité) du document'
+          example: "APPROVED"
+        name:
+          type: string
+          description: Identifiant de la partition
+        grid:
+          $ref: '#/components/schemas/Grid'
+        bbox:
+          type: array
+          description: 'Boîte englobante du document [minX, minY, maxX, maxY] en coordonnées WGS84'
+          items:
+            type: number
+          minItems: 4
+          maxItems: 4
+          example: [2.9400784, 48.8624668, 2.9773633, 48.8920683]
+        uploadDate:
+          type: string
+          format: date-time
+          description: 'Date et heure de téléversement (ISO 8601)'
+          example: "2023-01-01T10:10:10Z"
+        updateDate:
+          type: string
+          format: date-time
+          description: 'Date et heure de dernière mise à jour d''une propriété du document (ISO 8601)'
+          example: "2023-01-01T10:10:10Z"
+        fileIdentifier:
+          type: string
+          pattern: '^GPU-[a-f0-9]{32}$'
+          description: 'Identifiant de la fiche de métadonnées'
+          example: "GPU-a1b2c3d4e5f6789012345678901234ab"
+      example:
+        id: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        originalName: "77443_PLU_20171007"
+        type: "PLU"
+        supCategory: null
+        status: "document.production"
+        statusDate: "01/01/2023 10:10:10"
+        legalStatus: "APPROVED"
+        name: "DU_77443"
+        bbox: [2.9400784,48.8624668,2.9773633,48.8920683]
+        grid: {"name": "77443", "title": "SANCY", "type": "municipality", "rnu": false}
+        documentSource: "UPLOAD"
+        uploadDate: "01/01/2023 10:10:10"
+        updateDate: "01/01/2023 10:10:10"
+        legalControlStatus: 100
+
+    DocumentWithDetails:
+      allOf:
+        - $ref: '#/components/schemas/Document'
+        - type: object
+        - description: 'Document avec informations détaillées'
+        - properties:
+            # informations additionnelles obtenues par jointure
+            statusDate:
+              type: string
+              description: Date de dernier changement de statut
+              format: date-time
+            # informations additionnelles obtenues sur l'entrepot (document.json)
+            typeref:
+              type: string
+              description: 'Nom du référentiel cadastral utilisé pour la numérisation (01,02)'
+            files:
+              type: array
+              description: 'Liste des pièces écrites du document (nom court)'
+              items:
+                type: string
+            metadata:
+              type: string
+              description: 'Identifiant de la données dans la fiche de métadonnées'
+            protected:
+              type: boolean
+              description: Indique si le document est téléchargeable (SUP protégées)
+            writingMaterials:
+              type: object
+              description: 'URL des pièces écrites du document (clé : nom court, valeur: URL)'
+            archiveUrl:
+              type: string
+              description: URL de téléchargement de l'archive
+      example:
+        id: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        originalName: "77443_PLU_20171007"
+        type: "PLU"
+        supCategory: null
+        status: "document.production"
+        statusDate: "01/01/2023 10:10:10"
+        legalStatus: "APPROVED"
+        name: "DU_77443"
+        bbox: [2.9400784,48.8624668,2.9773633,48.8920683]
+        grid: {"name": "77443", "title": "SANCY" , "type": "municipality", "rnu": false}
+        documentSource: "UPLOAD"
+        uploadDate: "01/01/2023 10:10:10"
+        updateDate: "01/01/2023 10:10:10"
+        legalControlStatus: 100
+        title: "Plan Local d'Urbanisme (PLU) de la commune de SANCY"
+        fileIdentifier: "GPU-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        projectionCode: "EPSG:2154"
+        files: ["77443_procedure_20171007.pdf","77443_rapport_20171007.pdf"]
+        metadata: "fr-000077443-PLU20171007"
+        producer: "Mairie de Sancy-les-Meaux"
+        writingMaterials: {
+          "77443_procedure_20171007.pdf": "https://.../77443_procedure_20171007.pdf","77443_rapport_20171007.pdf": "https://.../77443_rapport_20171007.pdf"}
+        protected: false,
+        archiveUrl: "https://.../77443_PLU_20171007.zip"
+
+    DocumentFileInfo:
+      description: 'Informations sur une pièce écrite du document'
+      properties:
+        name:
+          type: string
+          description: 'Nom du fichier'
+        title:
+          type: string
+          description: 'Titre de la pièce écrite'
+        path:
+          type: string
+          description: 'Répertoire de la pièce écrite'
+      example:
+        name: "50213_rapport_20050707.pdf"
+        title: "Rapport"
+        path: "Rapport de présentation"
+
+    Feature:
+      type: object
+      description: GeoJSON Feature
+      properties:
+        id:
+          type: string
+          example: "document.1715"
+        type:
+          type: string
+          example: Feature
+        geometry:
+          type: string
+          example: null
+        properties:
+          type: object
+          properties:
+            gid:
+              type: string
+            partition:
+              type: string
+            additionalProperties:
+              type: string
+          required:
+            - gid
+            - partition
+          example:
+            gid: 1715,
+            id: "725489d1d2dc00f465008d01f1ac64d6"
+            grid_name: "200067627"
+            grid_title: "PLUI BILLOM COMMUNAUTE"
+            name: "200067627_PLUi_20191021"
+            partition: "DU_200067627"
+            du_type: "PLUi"
+            bbox: [357222.6944, 5719037.9423, 391318.2156, 5755149.6517]
+
+    FeatureCollection:
+      type: object
+      description: GeoJSON FeatureCollection
+      properties:
+        type:
+          type: string
+          example: FeatureCollection
+        totalFeatures:
+          type: integer
+          example: 1
+          description: Nombre de résultats
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/Feature'
+
+    Grid:
+      type: object
+      description: 'Territoire géographique (commune, département, etc.)'
+      required: [name, title]
+      properties:
+        name:
+          type: string
+          description: 'Code du territoire'
+        title:
+          type: string
+          description: 'Nom officiel du territoire'
+          example: "SANCY"
+        type:
+          type: string
+          enum: [state, region, departement, municipality, epci, scot]
+          description: 'Type de territoire'
+          example: "municipality"
+        rnu:
+          type: boolean
+          description: 'Indique si le territoire est en zone RNU (Règlement National d''Urbanisme)'
+          example: false
+        coastline:
+          type: boolean
+          description: 'Indique si le territoire est sur la côte'
+          example: false
+        approved:
+          type: boolean
+          description: 'Indique si le territoire a un document approuvé'
+          example: false
+      example:
+        name: "77443"
+        title: "SANCY"
+        type: "municipality"
+        rnu: false
+        coastline: false
+        approved: false
+    Projection:
+      description: 'Projection'
+      properties:
+        code:
+          type: string
+          description: 'Le code de la projection (ex : "EPSG:2154")'
+        validityDomain:
+          type: string
+          description: 'Le domaine de validité au format WKT'
+        title:
+          type: string
+          description: 'Titre de la projection'
+        uri:
+          type: string
+          format: uri
+          description: 'Uri de la projection'
+        codeGeotool:
+          type: boolean
+          description: 'Code géotools de la projection'
+      example:
+        code: "EPSG:2154"
+        validityDomain: "POLYGON((60000 6010000,60000 7130000,1270000 7130000,1270000 6010000,60000 6010000))"
+        title: "RGF93 / Lambert-93 (EPSG)"
+        uri: "http://www.opengis.net/def/crs/EPSG/0/2154"
+        codeGeotool: null
+
+    Procedure:
+      type: object
+      description: 'Procédure avec informations de base'
+      required: [id, name, documentType, documentName, procedureType, grid]
+      properties:
+        id:
+          type: string
+          pattern: '^[a-f0-9]{32}$'
+          description: 'Identifiant unique généré par le GPU pour chaque nouvelle procédure'
+          example: "a1b2c3d4e5f6789012345678901234ab"
+        name:
+          type: string
+          pattern: '^[0-9]{5}_[A-Z]+_[A-Z0-9]+_[0-9]{8}$'
+          description: 'Nom de la procédure au format [code_insee]_[type_doc]_[type_proc]_[date]'
+          example: "95197_PLU_M1_20200121"
+        documentType:
+          type: string
+          enum: [PLU, POS, CC, PLUi, PSMV, SCoT]
+          description: 'Type du document lié à la procédure'
+          example: "PLU"
+        documentName:
+          type: string
+          pattern: '^[0-9]{5}_[A-Z]+_[0-9]{8}$'
+          description: 'Nom du document lié à la procédure'
+          example: "95197_PLU_20200121"
+        procedureType:
+          type: string
+          enum: [E, R, RA, M, MS, MEC, MAJ]
+          description: 'Type de procédure selon le standard CNIG'
+          example: "M"
+        approbationDate:
+          type: string
+          format: date-time
+        inseeOrSiren:
+          $ref: '#/components/schemas/Grid'
+
+      example:
+        id: "a1b2c3d4e5f6789012345678901234ab"
+        name: "95197_PLU_M1_20200121"
+        documentType: "PLU"
+        documentName: "95197_PLU_20200121"
+        approbationDate: "2023-01-01T10:10:10Z"
+        grid: {
+          "name": "95197",
+          "title": "DEUIL-LA-BARRE"
+          }
+        procedureType: {
+          "name": "M",
+          "title": "Modification de droit commun n°1",
+          "number": "1",
+          "standardised": true,
+          }
+        files: [{
+            "name": "95197_20240208_délibération_M1_20200121.pdf",
+            "date": "08/02/2024",
+            "acteType": {
+              "name": "delib_approbation_M",
+              "title": "Délibération d’approbation de modification",
+              "standardised": true
+            },
+            "title": "Délibération d’approbation de modification validé le 8 février 2024"
+          }]
+
+    DocumentModelSummary:
+      type: object
+      description: "Résumé d'un modèle de document (standard)"
+      properties:
+        id:
+          type: integer
+          description: 'Identifiant unique du modèle'
+        name:
+          type: string
+          description: 'Nom du modèle (ex: cnig_PLU_2013)'
+        title:
+          type: string
+          description: 'Titre du modèle'
+        description:
+          type: string
+          description: 'Description du modèle'
+        abstract:
+          type: boolean
+          description: 'Indique si le modèle est abstrait'
+        type:
+          type: string
+          description: 'Type de document extrait du nom (PLU, POS, CC, etc.)'
+        parent:
+          type: object
+          description: "Modèle parent s'il existe"
+          properties:
+            id:
+              type: integer
+              description: 'Identifiant du modèle parent'
+            name:
+              type: string
+              description: 'Nom du modèle parent'
+      example:
+        id: 1
+        name: "cnig_PLU_2013"
+        title: "Plan Local d'Urbanisme"
+        description: "Modèle CNIG pour les PLU"
+        abstract: false
+        type: "PLU"
+        parent:
+          id: 2
+          name: "cnig_PLU_2012"
+
+    DocumentModel:
+      type: object
+      description: 'Modèle de document complet avec tous ses détails'
+      properties:
+        id:
+          type: integer
+          description: 'Identifiant unique du modèle'
+        name:
+          type: string
+          description: 'Nom du modèle'
+        title:
+          type: string
+          description: 'Titre du modèle'
+        description:
+          type: string
+          description: 'Description du modèle'
+        abstract:
+          type: boolean
+          description: 'Indique si le modèle est abstrait'
+        parent:
+          type: object
+          description: "Modèle parent s'il existe"
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+        featureTypes:
+          type: array
+          description: 'Liste des types de features (tables) du modèle'
+          items:
+            $ref: '#/components/schemas/FeatureType'
+      example:
+        id: 1
+        name: "cnig_PLU_2013"
+        title: "Plan Local d'Urbanisme"
+        description: "Modèle CNIG pour les PLU"
+        abstract: false
+        parent:
+          id: 2
+          name: "cnig_PLU_2012"
+        featureTypes:
+          - name: "DOC_URBA_COM"
+            title: "Document d'urbanisme communal"
+
+    FeatureType:
+      type: object
+      description: 'Type de feature (table) dans un modèle de document'
+      properties:
+        name:
+          type: string
+          description: 'Nom du type de feature'
+        title:
+          type: string
+          description: 'Titre du type de feature'
+        description:
+          type: string
+          description: 'Description du type de feature'
+        attributes:
+          type: array
+          description: 'Liste des attributs du type de feature'
+          items:
+            $ref: '#/components/schemas/AttributeType'
+      example:
+        name: "DOC_URBA_COM"
+        title: "Document d'urbanisme communal"
+        description: "Table des documents d'urbanisme communaux"
+        attributes:
+          - name: "ID_DOC_URBA"
+            title: "Identifiant du document"
+            type: "string"
+
+    AttributeType:
+      type: object
+      description: "Type d'attribut dans un type de feature"
+      properties:
+        name:
+          type: string
+          description: "Nom de l'attribut"
+        title:
+          type: string
+          description: "Titre de l'attribut"
+        type:
+          type: string
+          description: "Type de données de l'attribut"
+        description:
+          type: string
+          description: "Description de l'attribut"
+      example:
+        name: "ID_DOC_URBA"
+        title: "Identifiant du document"
+        type: "string"
+        description: "Identifiant unique du document d'urbanisme"
+
+    SupCategorie:
+      description: 'Catégorie de SUP'
+      properties:
+        name:
+          type: string
+          description: 'Nom de la catégorie'
+        libelle:
+          type: string
+          description: 'Libelle de la catégorie'
+        libelleCourt:
+          type: string
+          description: 'Libelle court de la catégorie'
+        downloadable:
+          type: boolean
+          description: 'Indique si le document est téléchargeable (SUP protégées)'
+        urlFiche:
+          type: string
+          description: 'Url de la fiche'
+      example:
+        name: "T7"
+        libelle: "Servitudes établies à l'extérieur des zones de dégagement"
+        libelleCourt: "Extérieur des zones de dégagement"
+        downloadable: true
+        urlFiche: "http://...."
+
+    DuCategorie:
+      description: 'Catégorie de DU'
+      properties:
+        type:
+          type: string
+          description: 'Type de la catégorie'
+        code:
+          type: string
+          description: 'Code de la catégorie'
+        sous_code:
+          type: string
+          description: 'Sous-code de la catégorie'
+        libelong:
+          type: boolean
+          description: 'Libelle de la catégorie'
+      example:
+        type: "prescription"
+        code: "01"
+        sous_code: "00"
+        libelong: "Espace boisé classé"
+
+

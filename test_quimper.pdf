@@ -1,0 +1,352 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8" />
+
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>Géoportail de l&#039;Urbanisme</title>
+
+        <link rel="icon" type="image/x-icon" href="/favicon.svg?v6.0.34" />
+
+        <!-- css -->
+        <link rel="stylesheet" media="screen,print" href="/build/gpu/css/jquery/datepicker.css?v6.0.34" />
+<link rel="stylesheet" href="/build/grid/jquery-typeahead/jquery.typeahead.min.css?v6.0.34" />
+<link rel="stylesheet" type="text/css" media="all" href="/build/gpu/css/gpu-bootstrap.min.css?v6.0.34" />
+<link rel="stylesheet" media="screen,print" href="/build/vendor/components-font-awesome/css/all.min.css?v6.0.34" />
+
+<link rel="stylesheet" media="screen,print" href="/build/gpu/css/gpu.css?v6.0.34" />
+<link rel="stylesheet" media="screen,print" href="/build/gpu/css/gpu-admin.css?v6.0.34" />
+<link rel="stylesheet" media="screen,print" href="/build/gpu/css/gpu/gpu-header.css?v6.0.34" />
+<link rel="stylesheet" media="screen,print" href="/build/gpu/css/gpu/gpu-content.css?v6.0.34" />
+<link rel="stylesheet" media="screen,print" href="/build/gpu/css/gpu/gpu-banner.css?v6.0.34" />
+<link rel="stylesheet" media="screen,print" href="/build/gpu/css/gpu/gpu-footer.css?v6.0.34" />
+<link rel="stylesheet" media="screen,print" href="/build/gpu/css/gpu/gpu-popup.css?v6.0.34" />
+
+<link rel="stylesheet" media="print" href="/build/gpu/css/gpu-print.css?v6.0.34" />
+
+        <!-- /css -->
+
+        
+    </head>
+    <body>
+
+        <div class="container-fluid" id="global-container">
+
+            <!-- logo -->
+            <!-- titre et logos -->
+<div id="header">
+    <a class="logo" href="/" title="Accueil">
+        <img src="/build/gpu/images/logos/logo-marianne.svg?v6.0.34"
+             id="marianne"
+             class="logo-marianne-header"
+             alt="Marianne"
+             height="60"
+             />
+        <img class="logo-gpu-title"
+             alt="Logo"
+             id="logo-gpu-title"
+             src="/build/gpu/images/logos/logo-gpu.png?v6.0.34"
+             height="60" />
+    </a>
+</div>
+
+            <!-- /logo -->
+
+            <!-- navigation -->
+            <!-- navigation -->
+<nav class="navbar navbar-default" role="navigation" >
+
+    <!-- navbar-header -->
+    <div class="navbar-header">
+        <div class="container">
+            <!-- toggle -->
+            <button type="button" id="button_menu_toggle" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                <span class="sr-only">Navigation</span>
+                <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+            </button>
+            <!-- /toggle -->
+        </div>
+    </div><!-- /navbar-header -->
+
+    <!-- menu -->
+    <div id="menu_toggle" class="collapse navbar-collapse navbar-ex1-collapse">
+        <ul class="nav navbar-nav">
+            <li>
+                <a class=""
+                   href="/">
+                    <span class="fa fa-home"></span>
+                </a>
+            </li>
+            <li>
+                <a
+                    href="#"
+                    class="dropdown-toggle"
+                    role="button"
+                    aria-expanded="false"
+                    data-toggle="dropdown">
+                    A propos
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a href="/info-general/">Présentation du GPU</a></li>
+                    <li><a href="/suivi_procedure/">Suivi de procédures</a></li>
+                    <li><a href="/infos_sup/">Servitudes d&#039;utilité publique (SUP)</a></li>
+                    <li><a href="/historic/">Historique des évolutions du GPU</a></li>
+                    <li><a href="/infos_tech/">Informations techniques</a></li>
+                </ul>
+
+            </li>
+            <li>
+                <a class=""
+                   href="/map/">
+                    Cartographie
+                </a>
+            </li>
+            <li>
+                <a class=""
+                   href="/search-document/">
+                    Recherche avancée
+                </a>
+            </li>
+            <li>
+                <a class=""
+                   href="/services/">
+                    Services
+                </a>
+            </li>
+            <li>
+                <a
+                    href="#"
+                    class="dropdown-toggle"
+                    role="button"
+                    aria-expanded="false"
+                    data-toggle="dropdown">
+                    Aide
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a href="/faq/">FAQ</a></li>
+                    <li><a href="/manuals/">Manuels et vidéos</a></li>
+                    <li><a href="/formations/">Formations</a></li>
+                    <li><a href="/usefull-links/">Contacts et liens utiles</a></li>
+                    <li><a href="/contact/">Assistance</a></li>
+                    <li><a href="/glossaire/">Glossaire</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="/statistics/france/">Statistiques</a>
+            </li>
+
+                        
+            <li>
+                <a class=""
+                   href="/atom/download-feed.html">
+                    <i class="fa fa-rss-square"></i>
+                </a>
+            </li>
+
+        </ul> <!-- /navbar -->
+
+        <ul class="nav navbar-nav navbar-right account-block">
+                    <li>
+        <a href="/login"
+        title="Connexion">
+            Connexion
+            / Inscription
+        </a>
+    </li>
+
+        </ul>
+
+    </div> <!-- /menu -->
+</nav><!-- /navigation -->
+
+            <!-- /navigation -->
+
+            <!-- content -->
+            <div id="flash_messages">
+
+    
+                                        </div>
+
+
+            <!-- body-container -->
+            <div id="body-container" class="container-fluid">
+                <div class="col-xs-12 col-md-6">
+    <h3 class="uppercase font-weight-bold">Erreur 404</h3>
+
+    <p class="font-weight-bold">La page que vous avez demandée n'est plus accessible à cette adresse.</p>
+
+    <p>
+        Si vous souhaitiez réinitialiser votre mot de passe, rendez-vous sur la page
+        <a class="gpu-blue" href="/login" title="Connexion">
+            connexion/inscription
+        </a>.
+    </p>
+    <p>
+        Si vous souhaitiez activer votre compte, cette action a vraissemblablement déjà été effectuée.
+        Rendez-vous sur votre espace personnel via la page
+        <a class="gpu-blue" href="/login" title="Connexion">
+            connexion/inscription
+        </a>
+        à l'aide de l'identifiant et du mot de passe que vous avez définis ou qui vous ont été fournis pour vous authentifier.
+    </p>
+</div>
+
+                <div class="col-xs-12 col-md-6">
+                    <hr>
+                    <p class="center">
+                        <a href="/"
+                           class="gpu-blue tooltip-link"
+                           data-toggle="tooltip"
+                           data-original-title='Accueil'
+                           ><span class="fa fa-home"></span>
+                        </a>
+                        <br>
+                        Cliquez <a href="/"
+                                   class="gpu-blue tooltip-link"
+                                   data-toggle="tooltip"
+                                   data-original-title='Accueil'
+                                   >
+                            ici</a> pour revenir à l'accueil.
+                    </p>
+                    <hr>
+                    <p class="center">
+                        <a  href="#"
+                            onclick="window.history.back();
+                                    return false;"
+                            class="gpu-blue tooltip-link"
+                            data-toggle="tooltip"
+                            data-original-title='Page Précédente'
+                            ><span class="fa fa-fast-backward"></span>
+                        </a>
+                        <br>
+                        Cliquez <a  href="#"
+                                    onclick="window.history.back();
+                                            return false;"
+                                    class="gpu-blue tooltip-link"
+                                    data-toggle="tooltip"
+                                    data-original-title='Page Précédente'
+                                    >ici</a> pour revenir à la page précédente.
+                    </p>
+                    <hr>
+                </div>
+
+            </div>
+            <!-- footer -->
+            <div id="footer" class="container-fluid hidden-print footer background-gpu-blue">
+    <div class="footer_column col-xs-3">
+        <ul class="list-unstyled">
+            <li><p class="title"><a href="/plan-site/">PLAN DU SITE</a></p></li>
+            <li><a href="/">Accueil</a></li>
+            <li><a href="/info-general/">Présentation du GPU</a></li>
+            <li><a href="/historic/">Historique des évolutions du GPU</a></li>
+            <li><a href="/map/">Cartographie</a></li>
+            <li><a href="/search-document/">Recherche avancée</a></li> <!-- recherche -->
+                                <li><a href="/login">Connexion / Inscription</a></li><!-- inscription connexion -->
+                            <li><a href="/services/">Services</a></li>
+        </ul>
+    </div>
+
+    <div class="footer_column col-xs-3">
+        <ul class="list-unstyled">
+            <li> <p class="title">AIDE</p></li>
+            <li><a href="/faq/">FAQ</a></li>
+            <li><a href="/manuals/">Manuels et Vidéos</a></li>
+            <li><a href="/formations/">Formations</a></li>
+            <li><a href="/usefull-links/">Contacts et Liens utiles</a></li>
+            <li><a href="/contact/">Assistance</a></li>
+            <li><a href="/glossaire/">Glossaire</a></li>
+            <li id="popup-content" class="hidden"><a href="/popup_content/"><span class="gpu-gold">Dernières nouvelles</span></a></li>
+        </ul>
+    </div>
+
+    <div class="footer_column col-xs-3">
+        <ul class="list-unstyled">
+            <li><p class="title uppercase">Légal</p></li>
+            <li><a href="/infos-legales/">Mentions Légales</a></li>
+            <li><a href="/cgu/">Conditions Générales d&#039;Utilisation</a></li>
+            <li><a href="/stats/">Cookies et statistiques</a></li>
+            <li><a href="/credits/">Crédits</a></li>
+            <li><a href="/rgpd/">RGPD</a></li>
+        </ul>
+    </div>
+
+    <div class="footer_column col-xs-3">
+        <ul class="list-unstyled">
+            <li><p class="title">PARTENAIRES</p></li>
+            <li>
+                <a href="https://cartes.gouv.fr/" target="_blank" title='Ouvrir le site &quot;https://cartes.gouv.fr/&quot; dans une nouvelle fenêtre'>
+                    cartes.gouv.fr
+                </a>
+            </li>
+            <li>
+                <a href="https://www.data.gouv.fr/" target="_blank" title='Ouvrir le site &quot;https://www.data.gouv.fr/fr/&quot; dans une nouvelle fenêtre'>
+                    data.gouv.fr
+                </a>
+            </li>
+            <li>
+                <a href="https://www.info.gouv.fr/" target="_blank" title='Ouvrir le site &quot;https://www.info.gouv.fr/&quot; dans une nouvelle fenêtre'>
+                    info.gouv.fr
+                </a>
+            </li>
+            <li>
+                <a href="https://www.legifrance.gouv.fr/" target="_blank" title='Ouvrir le site &quot;https://www.legifrance.gouv.fr/&quot; dans une nouvelle fenêtre'>
+                    legifrance.gouv.fr
+                </a>
+            </li>
+            <li>
+                <a href="https://www.france.fr/" target="_blank" title='Ouvrir le site &quot;https://www.france.fr/fr/&quot; dans une nouvelle fenêtre'>
+                    france.fr
+                </a>
+            </li>
+            <li>
+                <a href="https://www.service-public.gouv.fr/" target="_blank" title='Ouvrir le site &quot;https://www.service-public.gouv.fr/&quot; dans une nouvelle fenêtre'>
+                    service-public.gouv.fr
+                </a>
+            </li>
+            <li>
+                <a href="https://www.ign.fr" target="_blank" title='Ouvrir le site &quot;https://www.ign.fr&quot; dans une nouvelle fenêtre'>
+                    &copy; IGN
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div id="footer-logo">
+    <a class="logo" href="https://www.ecologie.gouv.fr/" target="_blank"
+        title='Ouvrir le site &quot;https://www.ecologie.gouv.fr/&quot; dans une nouvelle fenêtre'  >
+        <img src="/build/gpu/images/logos/logo-ministere.png?v6.0.34"
+             id="marianne_footer"
+             alt="https://www.ecologie.gouv.fr/"
+             height="100"
+             />
+    </a>
+    <a class="logo" id="ign_logo" href="https://www.ign.fr"  target="_blank"
+        title='Ouvrir le site &quot;https://www.ign.fr&quot; dans une nouvelle fenêtre'>
+        <img src="/build/gpu/images/logos/logo-ign.svg?v6.0.34"
+             alt="https://www.ign.fr"
+             height="60"
+             />
+    </a>
+
+</div>
+
+            <!-- /footer -->
+        </div><!-- #global-container -->
+
+        <script src="/build/vendor/jquery/jquery.min.js?v6.0.34"></script>
+        <script src="/build/gpu/js/gpu-bootstrap.min.js?v6.0.34"></script>
+        <script>
+            $(document).ready(function() {
+                $(".tooltip-link").tooltip();
+            });
+        </script>
+
+        </body>
+</html>

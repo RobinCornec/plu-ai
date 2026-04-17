@@ -1,0 +1,658 @@
+openapi: 3.1.0
+info:
+    version: '2.10.0'
+    title: Module urbanisme (GpU)
+    description: >
+        Le service d’interrogation du GPU permet d’obtenir des informations d’urbanisme intersectant une géométrie (ponctuelle ou surfacique).
+
+
+        Attention : les géométries passées en paramètre doivent comporter un nombre de points raisonnable.
+
+
+        Toutes les réponses sont au format GeoJSON et de type FeatureCollection.
+
+        Toutes les requêtes du module GPU peuvent se faire en POST ou en GET.
+
+
+        Consultez la [documentation utilisateur](https://apicarto.ign.fr/api/doc/pdf/docUser_moduleUrbanisme.pdf) pour plus d’informations sur les paramètres d’appel disponibles et le format des résultats.
+
+
+        Exemple de géométrie: (référentiel EPSG:4326)
+
+          * Centre de Rennes:
+
+            `{"type": "Point","coordinates":[-1.691634,48.104237]}`
+          * Parcelle:
+
+            `{"type":"MultiPolygon","coordinates":[[[[-0.4781433,44.745308],[-0.4782708,44.74523],[-0.4783436,44.7451852],[-0.4783998,44.7451462],[-0.4784414,44.7451099],[-0.4784924,44.7450598],[-0.4785333,44.7450223],[-0.4785783,44.7449774],[-0.4786326,44.7449217],[-0.4786341,44.7449202],[-0.4795499,44.7457302],[-0.4789179,44.7461035],[-0.4781433,44.745308]]]]}`
+
+
+    contact:
+        name: API Carto GPU
+
+servers:
+    - url: /
+paths:
+
+    /api/gpu/municipality:
+        get:
+            operationId: getMunicipality
+            summary: Récupération des informations sur une commune (est au RNU? est supprimée?)
+            description: |
+                Retourne un résultat de Type "FeatureCollection" avec des communes correspondant aux paramètres
+            tags:
+                - Communes
+            parameters:
+                - in: query
+                  name: geom
+                  required: false
+                  description: Géométrie GeoJSON utilisée pour la recherche
+                  schema:
+                      type: string
+
+                - in: query
+                  name: insee
+                  required: false
+                  description: Code insee de la commune
+                  schema:
+                      type: string
+
+            responses:
+                '200':
+                    description: Success
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FeatureCollection'
+
+
+    /api/gpu/document:
+        get:
+            operationId: getDocument
+            summary: Récupération de l'emprise d'un document
+            description: |
+                Prend en entrée une géométrie au format JSON et retourne une featureCollection.
+                Retourne un résultat de Type "FeatureCollection" avec l'emprise d'un document qui intersecte la géométrie.
+            tags:
+                - Documents d'urbanisme (PLU, POS, CC, PSMV)
+            parameters:
+                - in: query
+                  name: geom
+                  required: false
+                  description: Géométrie GeoJSON utilisée pour la recherche
+                  schema:
+                      type: string
+
+                - in: query
+                  name: partition
+                  required: false
+                  description: Partition GPU du document au format <DU/PSMV>_<INSEE/SIREN>
+                  schema:
+                      type: string
+
+            responses:
+                '200':
+                    description: Success
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FeatureCollection'
+
+    /api/gpu/zone-urba:
+        get:
+            operationId: getZoneUrba
+            summary: Récupération des zonages d’un document d’urbanisme
+            description: |
+                Prend en entrée une géométrie au format JSON et retourne une featureCollection.
+                Retourne un résultat de Type "FeatureCollection" avec les informations qui intersectent la géométrie.
+            tags:
+                - Documents d'urbanisme (PLU, POS, CC, PSMV)
+            parameters:
+                - in: query
+                  name: geom
+                  required: false
+                  description: Géométrie GeoJSON utilisée pour la recherche
+                  schema:
+                      type: string
+
+                - in: query
+                  name: partition
+                  required: false
+                  description: Partition GPU du document au format <DU/PSMV>_<INSEE/SIREN>
+                  schema:
+                      type: string
+
+            responses:
+                '200':
+                    description: Success
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FeatureCollection'
+
+    /api/gpu/secteur-cc:
+        get:
+            operationId: getSecteurCC
+            summary: Récupération des secteurs d’une carte communale
+            description: >
+                Prend en entrée une géométrie au format JSON et retourne une featureCollection.
+                Retourne un résultat de Type "FeatureCollection" avec les informations qui intersectent la géométrie.
+            tags:
+                - Documents d'urbanisme (PLU, POS, CC, PSMV)
+            parameters:
+                - in: query
+                  name: geom
+                  required: false
+                  description: Géométrie GeoJSON utilisée pour la recherche
+                  schema:
+                      type: string
+
+                - in: query
+                  name: partition
+                  required: false
+                  description: Partition GPU du document au format <DU/PSMV>_<INSEE/SIREN>
+                  schema:
+                      type: string
+
+            responses:
+                '200':
+                    description: Success
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FeatureCollection'
+
+
+    /api/gpu/prescription-surf:
+        get:
+            operationId: getPrescriptionSurf
+            summary: Récupération des prescriptions surfaciques d’un document d’urbanisme
+            description: |
+                Prend en entrée une géométrie au format JSON et retourne une featureCollection.
+                Retourne un résultat de Type "FeatureCollection" avec les informations qui intersectent la géométrie.
+            tags:
+                - Documents d'urbanisme (PLU, POS, CC, PSMV)
+            parameters:
+                - in: query
+                  name: geom
+                  required: false
+                  description: Géométrie GeoJSON utilisée pour la recherche
+                  schema:
+                      type: string
+
+                - in: query
+                  name: partition
+                  required: false
+                  description: Partition GPU du document au format <DU/PSMV>_<INSEE/SIREN>
+                  schema:
+                      type: string
+
+            responses:
+                '200':
+                    description: Success
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FeatureCollection'
+
+    /api/gpu/prescription-lin:
+        get:
+            operationId: getPrescriptionLin
+            summary: Récupération des prescriptions linéaires d’un document d’urbanisme
+            description: |
+                Prend en entrée une géométrie au format JSON et retourne une featureCollection.
+                Retourne un résultat de Type "FeatureCollection" avec les informations qui intersectent la géométrie.
+            tags:
+                - Documents d'urbanisme (PLU, POS, CC, PSMV)
+            parameters:
+                - in: query
+                  name: geom
+                  required: false
+                  description: Géométrie GeoJSON utilisée pour la recherche
+                  schema:
+                      type: string
+
+                - in: query
+                  name: partition
+                  required: false
+                  description: Partition GPU du document au format <DU/PSMV>_<INSEE/SIREN>
+                  schema:
+                      type: string
+
+            responses:
+                '200':
+                    description: Success
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FeatureCollection'
+
+    /api/gpu/prescription-pct:
+        get:
+            operationId: getPrescriptionPct
+            summary: Récupération des prescriptions ponctuelles d’un document d’urbanisme
+            description: |
+                Prend en entrée une géométrie au format JSON et retourne une featureCollection.
+                Retourne un résultat de Type "FeatureCollection" avec les informations qui intersectent la géométrie.
+            tags:
+                - Documents d'urbanisme (PLU, POS, CC, PSMV)
+            parameters:
+                - in: query
+                  name: geom
+                  required: false
+                  description: Géométrie GeoJSON utilisée pour la recherche
+                  schema:
+                      type: string
+
+                - in: query
+                  name: partition
+                  required: false
+                  description: Partition GPU du document au format <DU/PSMV>_<INSEE/SIREN>
+                  schema:
+                      type: string
+
+            responses:
+                '200':
+                    description: Success
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FeatureCollection'
+
+    /api/gpu/info-surf:
+        get:
+            operationId: getInfoSurf
+            summary: Récupération des informations surfaciques d’un document d’urbanisme
+            description: |
+                Prend en entrée une géométrie au format JSON et retourne une featureCollection.
+                Retourne un résultat de Type "FeatureCollection" avec les informations qui intersectent la géométrie.
+            tags:
+                - Documents d'urbanisme (PLU, POS, CC, PSMV)
+            parameters:
+                - in: query
+                  name: geom
+                  required: false
+                  description: Géométrie GeoJSON utilisée pour la recherche
+                  schema:
+                      type: string
+
+                - in: query
+                  name: partition
+                  required: false
+                  description: Partition GPU du document au format <DU/PSMV>_<INSEE/SIREN>
+                  schema:
+                      type: string
+
+            responses:
+                '200':
+                    description: Success
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FeatureCollection'
+
+    /api/gpu/info-lin:
+        get:
+            operationId: getInfoLin
+            summary: Récupération des informations linéaires d’un document d’urbanisme
+            description: |
+                Prend en entrée une géométrie au format JSON et retourne une featureCollection.
+                Retourne un résultat de Type "FeatureCollection" avec les informations qui intersectent la géométrie.
+            tags:
+                - Documents d'urbanisme (PLU, POS, CC, PSMV)
+            parameters:
+                - in: query
+                  name: geom
+                  required: false
+                  description: Géométrie GeoJSON utilisée pour la recherche
+                  schema:
+                      type: string
+
+                - in: query
+                  name: partition
+                  required: false
+                  description: Partition GPU du document au format <DU/PSMV>_<INSEE/SIREN>
+                  schema:
+                      type: string
+
+            responses:
+                '200':
+                    description: Success
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FeatureCollection'
+
+    /api/gpu/info-pct:
+        get:
+            operationId: getInfoPct
+            summary: Récupération des informations ponctuelles d’un document d’urbanisme
+            description: |
+                Prend en entrée une géométrie au format JSON et retourne une featureCollection.
+                Retourne un résultat de Type "FeatureCollection" avec les informations qui intersectent la géométrie.
+            tags:
+                - Documents d'urbanisme (PLU, POS, CC, PSMV)
+            parameters:
+                - in: query
+                  name: geom
+                  required: false
+                  description: Géométrie GeoJSON utilisée pour la recherche
+                  schema:
+                      type: string
+
+                - in: query
+                  name: partition
+                  required: false
+                  description: Partition GPU du document au format <DU/PSMV>_<INSEE/SIREN>
+                  schema:
+                      type: string
+
+            responses:
+                '200':
+                    description: Success
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FeatureCollection'
+
+
+    /api/gpu/acte-sup:
+        get:
+            operationId: getActeSup
+            summary: Récupération des actes des servitudes d’utilité publique
+            description: |
+                Prend en entrée une géométrie au format JSON et retourne une featureCollection.
+                Retourne un résultat de Type "FeatureCollection" avec les informations qui intersectent la géométrie.
+            tags:
+                - SUP
+            parameters:
+                - in: query
+                  name: partition
+                  required: false
+                  description: Partition GPU du document
+                  schema:
+                      type: string
+
+            responses:
+                '200':
+                    description: Success
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FeatureCollection'
+
+    /api/gpu/assiette-sup-s:
+        get:
+            operationId: getAssietteSupS
+            summary: Récupération des assiettes surfaciques de servitudes d’utilité publique
+            description: |
+                Prend en entrée une géométrie au format JSON et retourne une featureCollection.
+                Retourne un résultat de Type "FeatureCollection" avec les informations qui intersectent la géométrie.
+            tags:
+                - SUP
+            parameters:
+                - in: query
+                  name: geom
+                  required: false
+                  description: Géométrie GeoJSON utilisée pour la recherche
+                  schema:
+                      type: string
+
+                - in: query
+                  name: partition
+                  required: false
+                  description: Partition GPU du document
+                  schema:
+                      type: string
+
+                - in: query
+                  name: categorie
+                  required: false
+                  description: Categorie
+                  schema:
+                      type: string
+
+            responses:
+                '200':
+                    description: Success
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FeatureCollection'
+
+    /api/gpu/assiette-sup-l:
+        get:
+            operationId: getAssietteSupL
+            summary: Récupération des assiettes linéaires de servitudes d’utilité publique
+            description: |
+                Prend en entrée une géométrie au format JSON et retourne une featureCollection.
+                Retourne un résultat de Type "FeatureCollection" avec les informations qui intersectent la géométrie.
+            tags:
+                - SUP
+            parameters:
+                - in: query
+                  name: geom
+                  required: false
+                  description: Géométrie GeoJSON utilisée pour la recherche
+                  schema:
+                      type: string
+
+                - in: query
+                  name: partition
+                  required: false
+                  description: Partition GPU du document
+                  schema:
+                      type: string
+
+                - in: query
+                  name: categorie
+                  required: false
+                  description: Categorie
+                  schema:
+                      type: string
+
+            responses:
+                '200':
+                    description: Success
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FeatureCollection'
+
+    /api/gpu/assiette-sup-p:
+        get:
+            operationId: getAssietteSupP
+            summary:  Récupération des assiettes ponctuelles de servitudes d’utilité publique
+            description: |
+                Prend en entrée une géométrie au format JSON et retourne une featureCollection.
+                Retourne un résultat de Type "FeatureCollection" avec les informations qui intersectent la géométrie.
+            tags:
+                - SUP
+            parameters:
+                - in: query
+                  name: geom
+                  required: false
+                  description: Géométrie GeoJSON utilisée pour la recherche
+                  schema:
+                      type: string
+
+                - in: query
+                  name: partition
+                  required: false
+                  description: Partition GPU du document
+                  schema:
+                      type: string
+
+                - in: query
+                  name: categorie
+                  required: false
+                  description: Categorie
+                  schema:
+                      type: string
+
+            responses:
+                '200':
+                    description: Success
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FeatureCollection'
+
+
+    /api/gpu/generateur-sup-s:
+        get:
+            operationId: getGenerateurSupS
+            summary: Récupération des générateurs surfaciques des servitudes d’utilité publique
+            description: |
+                Prend en entrée une géométrie au format JSON et retourne une featureCollection.
+                Retourne un résultat de Type "FeatureCollection" avec les informations qui intersectent la géométrie.
+            tags:
+                - SUP
+            parameters:
+                - in: query
+                  name: geom
+                  required: false
+                  description: Géométrie GeoJSON utilisée pour la recherche
+                  schema:
+                      type: string
+
+                - in: query
+                  name: partition
+                  required: false
+                  description: Partition GPU du document
+                  schema:
+                      type: string
+
+                - in: query
+                  name: categorie
+                  required: false
+                  description: Categorie
+                  schema:
+                      type: string
+
+            responses:
+                '200':
+                    description: Success
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FeatureCollection'
+
+    /api/gpu/generateur-sup-l:
+        get:
+            operationId: getGenerateurSupL
+            summary: Récupération des générateurs linéaires des servitudes d’utilité publique
+            description: |
+                Prend en entrée une géométrie au format JSON et retourne une featureCollection.
+                Retourne un résultat de Type "FeatureCollection" avec les informations qui intersectent la géométrie.
+            tags:
+                - SUP
+            parameters:
+                - in: query
+                  name: geom
+                  required: false
+                  description: Géométrie GeoJSON utilisée pour la recherche
+                  schema:
+                      type: string
+
+                - in: query
+                  name: partition
+                  required: false
+                  description: Partition GPU du document au format
+                  schema:
+                      type: string
+
+                - in: query
+                  name: categorie
+                  required: false
+                  description: Categorie
+                  schema:
+                      type: string
+
+            responses:
+                '200':
+                    description: Success
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FeatureCollection'
+
+    /api/gpu/generateur-sup-p:
+        get:
+            operationId: getGenerateurSupP
+            summary:  Récupération des générateurs ponctuels des servitudes d’utilité publique
+            description: |
+                Prend en entrée une géométrie au format JSON et retourne une featureCollection.
+                Retourne un résultat de Type "FeatureCollection" avec les informations qui intersectent la géométrie.
+            tags:
+                - SUP
+            parameters:
+                - in: query
+                  name: geom
+                  required: false
+                  description: Géométrie GeoJSON utilisée pour la recherche
+                  schema:
+                      type: string
+
+                - in: query
+                  name: partition
+                  required: false
+                  description: Partition GPU du document au format <DU/PSMV>_<INSEE/SIREN>
+                  schema:
+                      type: string
+
+                - in: query
+                  name: categorie
+                  required: false
+                  description: Categorie
+                  schema:
+                      type: string
+
+            responses:
+                '200':
+                    description: Success
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FeatureCollection'
+
+components:
+    schemas:
+        Geometry:
+            type: object
+            description: Une `Geometry` au sens GeoJSON
+            properties:
+                type:
+                    type: string
+                    description: Le type géométrique
+                    enum:
+                        - Point
+                        - LineString
+                        - Polygon
+                        - MultiPoint
+                        - MultiLineString
+                        - MultiPolygon
+                coordinates:
+                    type: array
+                    items: {}
+        Feature:
+            type: object
+            description: Une `Feature` au sens GeoJSON
+            properties:
+                type:
+                    type: string
+                    description: Le type d'objet GeoJSON (`Feature`)
+                id:
+                    type: string
+                geometry:
+                    $ref: '#/components/schemas/Geometry'
+        FeatureCollection:
+            type: object
+            description: Une `FeatureCollection` au sens GeoJSON
+            properties:
+                type:
+                    type: string
+                    description: Le type d'objet GeoJSON (`FeatureCollection`)
+                features:
+                    type: array
+                    items: {}

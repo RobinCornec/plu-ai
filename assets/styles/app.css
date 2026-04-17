@@ -1,3 +1,374 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Montserrat:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100..800&display=swap');
+
+/* Base styles */
 body {
-    background-color: skyblue;
+    @apply bg-neutral-50 font-sans text-neutral-800;
+}
+
+/* Add smooth scrolling for the whole page */
+html {
+    @apply scroll-smooth;
+}
+
+/* Atomic Design Components */
+
+/* Atoms */
+.btn {
+    @apply inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200;
+}
+
+.btn-primary {
+    @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
+}
+
+.btn-secondary {
+    @apply bg-secondary-600 text-white hover:bg-secondary-700 focus:ring-secondary-500;
+}
+
+.btn-outline {
+    @apply border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50 focus:ring-primary-500;
+}
+
+.input {
+    @apply block w-full rounded-lg border-neutral-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-neutral-800 placeholder:text-neutral-500;
+}
+
+.card {
+    @apply bg-white rounded-xl shadow-card overflow-hidden transition-all duration-300;
+}
+
+.card-hover {
+    @apply hover:shadow-lg hover:-translate-y-1;
+}
+
+.card-header {
+    @apply px-6 py-4 border-b border-neutral-200;
+}
+
+.card-body {
+    @apply p-6;
+}
+
+.card-footer {
+    @apply px-6 py-4 border-t border-neutral-200;
+}
+
+/* Card variations */
+.card-glass {
+    @apply bg-white/80 backdrop-blur-sm border border-white/20;
+}
+
+.card-bordered {
+    @apply border border-neutral-200 hover:border-primary-300;
+}
+
+.card-gradient {
+    @apply bg-gradient-to-br from-primary-50 to-neutral-50;
+}
+
+.badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.badge-primary {
+    @apply bg-primary-100 text-primary-800;
+}
+
+.badge-secondary {
+    @apply bg-secondary-100 text-secondary-800;
+}
+
+/* Typography */
+.heading-1 {
+    @apply text-4xl font-display font-bold text-neutral-900 leading-tight;
+}
+
+.heading-2 {
+    @apply text-3xl font-display font-bold text-neutral-900 leading-tight;
+}
+
+.heading-3 {
+    @apply text-2xl font-display font-semibold text-neutral-900 leading-tight;
+}
+
+.heading-4 {
+    @apply text-xl font-display font-semibold text-neutral-900 leading-tight;
+}
+
+.subtitle {
+    @apply text-lg text-neutral-600 leading-relaxed;
+}
+
+/* Text alignment utilities */
+.text-center-responsive {
+    @apply text-left md:text-center;
+}
+
+.text-justify-responsive {
+    @apply text-left md:text-justify;
+}
+
+/* Paragraph styles */
+.paragraph {
+    @apply text-base leading-relaxed text-neutral-700 mb-4;
+}
+
+/* Text with gradient */
+.text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-secondary-600;
+}
+
+/* Molecules */
+.search-form {
+    @apply flex flex-col sm:flex-row gap-4;
+}
+
+.tab-button {
+    @apply w-full py-4 px-1 text-center border-b-2 font-medium text-sm transition-all duration-200;
+}
+
+.tab-button-active {
+    @apply border-primary-500 text-primary-600;
+}
+
+.tab-button-inactive {
+    @apply border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300;
+}
+
+.chat-message {
+    @apply mb-4;
+}
+
+.chat-message-user {
+    @apply flex items-start justify-end;
+}
+
+.chat-message-assistant {
+    @apply flex items-start;
+}
+
+.chat-bubble {
+    @apply text-sm rounded-lg p-3 shadow;
+}
+
+.chat-bubble-user {
+    @apply bg-primary-100 text-neutral-800;
+}
+
+.chat-bubble-assistant {
+    @apply bg-white text-neutral-800;
+}
+
+/* Organisms */
+.app-header {
+    @apply bg-white shadow-sm border-b border-neutral-200 sticky top-0 z-50 backdrop-blur-sm bg-white/90;
+}
+
+.app-container {
+    @apply max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 transition-all duration-300;
+}
+
+.app-section {
+    @apply py-12 md:py-16 lg:py-20;
+}
+
+.app-section-sm {
+    @apply py-8 md:py-10 lg:py-12;
+}
+
+.map-container {
+    @apply h-96 md:h-[450px] lg:h-[500px] rounded-lg border border-neutral-200 overflow-hidden transition-all duration-300;
+}
+
+.tabs-container {
+    @apply border-b border-neutral-200 sticky top-0 bg-white z-10;
+}
+
+.chat-container {
+    @apply flex flex-col h-96 md:h-[450px] lg:h-[500px] transition-all duration-300;
+}
+
+.chat-messages-container {
+    @apply flex-1 overflow-y-auto mb-4 p-4 bg-neutral-50 rounded-lg;
+}
+
+.chat-input-container {
+    @apply mt-auto;
+}
+
+/* Layout utilities */
+.grid-responsive {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8;
+}
+
+.grid-responsive-2 {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8;
+}
+
+/* Prose overrides for chat tables */
+.prose table {
+    @apply w-full text-left border-collapse my-4;
+}
+
+.prose thead {
+    @apply bg-neutral-100 border-b border-neutral-200;
+}
+
+.prose th {
+    @apply px-4 py-3 font-bold text-neutral-900 border-b-2 border-neutral-200 text-left;
+}
+
+.prose tr {
+    @apply border-b border-neutral-100 last:border-0;
+}
+
+.prose td {
+    @apply px-4 py-3 text-neutral-700 align-top;
+}
+
+.prose tr:nth-child(even) {
+    @apply bg-neutral-50/50;
+}
+
+.flex-responsive {
+    @apply flex flex-col md:flex-row;
+}
+
+.flex-responsive-reverse {
+    @apply flex flex-col-reverse md:flex-row;
+}
+
+/* Animation utilities */
+.fade-in {
+    @apply opacity-0 animate-[fadeIn_0.5s_ease-in-out_forwards];
+}
+
+.slide-up {
+    @apply opacity-0 translate-y-8 animate-[slideUp_0.5s_ease-out_forwards];
+}
+
+.slide-in-right {
+    @apply opacity-0 translate-x-8 animate-[slideInRight_0.5s_ease-out_forwards];
+}
+
+.slide-in-left {
+    @apply opacity-0 -translate-x-8 animate-[slideInLeft_0.5s_ease-out_forwards];
+}
+
+.scale-in {
+    @apply opacity-0 scale-95 animate-[scaleIn_0.5s_ease-out_forwards];
+}
+
+.bounce-in {
+    @apply animate-[bounceIn_0.6s_ease-out_forwards];
+}
+
+.pulse {
+    @apply animate-pulse;
+}
+
+/* Animation delays */
+.delay-100 {
+    animation-delay: 100ms;
+}
+
+.delay-200 {
+    animation-delay: 200ms;
+}
+
+.delay-300 {
+    animation-delay: 300ms;
+}
+
+.delay-400 {
+    animation-delay: 400ms;
+}
+
+.delay-500 {
+    animation-delay: 500ms;
+}
+
+/* Hover animations */
+.hover-scale {
+    @apply transition-transform duration-300 hover:scale-105;
+}
+
+.hover-lift {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-lg;
+}
+
+.hover-glow {
+    @apply transition-all duration-300 hover:shadow-[0_0_15px_rgba(59,130,246,0.5)];
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(2rem); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(2rem); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-2rem); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes bounceIn {
+    0% { opacity: 0; transform: scale(0.3); }
+    50% { opacity: 1; transform: scale(1.05); }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); }
+}
+
+/* Autocomplete styles */
+.search-autocomplete-results {
+    @apply absolute z-[100] w-full mt-1 bg-white rounded-lg shadow-lg overflow-hidden border border-neutral-200;
+    max-height: 300px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+.search-autocomplete-list {
+    @apply divide-y divide-neutral-100;
+}
+
+.search-autocomplete-item {
+    @apply px-4 py-3 flex items-center text-neutral-700 hover:bg-neutral-50 cursor-pointer transition-colors duration-150;
+    /* Make touch targets larger on mobile */
+    @apply sm:py-3 py-4;
+    /* Ensure text doesn't overflow */
+    @apply truncate;
+}
+
+.search-autocomplete-loading {
+    @apply px-4 py-3 flex items-center text-neutral-500;
+}
+
+/* Animation for autocomplete results */
+.search-autocomplete-results {
+    animation: slideDown 0.2s ease-out forwards;
+    /* Ensure it doesn't go off-screen on mobile */
+    @apply w-full left-0 right-0;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }

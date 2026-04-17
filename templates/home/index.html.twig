@@ -1,0 +1,133 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PLU-AI - Consultez les règles d'urbanisme avec l'aide de l'IA{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen flex flex-col">
+    <!-- Header - Simplified for focus on search -->
+    <header class="app-header">
+        <div class="app-container">
+            <div class="flex items-center justify-between py-4">
+                <div class="flex items-center">
+                    <div class="bg-primary-600 text-white p-2 rounded-lg mr-3">
+                        <i class="fas fa-map-marked-alt text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="heading-2">PLU-AI</h1>
+                    </div>
+                </div>
+                <div class="hidden md:block">
+                    <div class="badge badge-primary">
+                        <i class="fas fa-info-circle mr-1"></i> Version Beta
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Search Section - Expanded to be the main focus -->
+    <section class="flex-grow flex items-center justify-center bg-gradient-to-br from-primary-600 to-primary-800 text-white py-12 md:py-24 lg:py-32 relative z-20">
+        <!-- Background decorative elements -->
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+            <div class="absolute top-10 left-10 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-10 right-10 w-80 h-80 bg-secondary-500/10 rounded-full blur-3xl"></div>
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary-300/10 rounded-full blur-3xl"></div>
+        </div>
+
+        <div class="app-container relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Main Title -->
+            <div class="text-center mb-10">
+                <h1 class="heading-1 text-white mb-4">Consultez les règles d'urbanisme avec l'aide de l'IA</h1>
+                <p class="text-xl text-white/80 max-w-3xl mx-auto">Entrez une adresse ou une référence cadastrale pour découvrir les règles d'urbanisme applicables</p>
+            </div>
+
+            <!-- Search Form - Larger and more prominent -->
+            <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 md:p-8 transform transition-all duration-300 hover:shadow-2xl">
+                <form class="search-form"
+                      data-map-target="searchForm"
+                      data-controller="search-autocomplete"
+                      data-search-autocomplete-url-value="{{ path('app_autocomplete') }}"
+                      data-search-autocomplete-min-length-value="2"
+                      data-search-autocomplete-debounce-value="300">
+                    <div class="flex-grow relative">
+                        <div class="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-neutral-400 text-2xl"></i>
+                        </div>
+                        <input
+                            type="text"
+                            id="search"
+                            name="query"
+                            class="input pl-16 py-6 text-xl rounded-xl"
+                            placeholder="Saisissez une adresse ou une référence cadastrale"
+                            data-map-target="search"
+                            data-search-autocomplete-target="input"
+                            autocomplete="on"
+                            required
+                        >
+                    </div>
+                </form>
+
+                <div class="mt-6 text-neutral-600 text-sm flex flex-col sm:flex-row justify-center sm:space-x-6 space-y-2 sm:space-y-0">
+                    <span><i class="fas fa-info-circle mr-1"></i> Exemple: "15 rue de Rivoli, Paris"</span>
+                    <span><i class="fas fa-map mr-1"></i> Exemple: "AB123"</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results Section (initially hidden, shown after search) -->
+    <div id="search-results" class="hidden">
+        <turbo-frame id="search-results-frame">
+            <!-- This content will be replaced by the server response -->
+            <div class="app-container py-8">
+                <div class="flex justify-center">
+                    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+                </div>
+            </div>
+        </turbo-frame>
+    </div>
+
+    <!-- Footer - Simplified for mobile -->
+    <footer class="bg-gradient-to-br from-neutral-800 to-neutral-900 text-white py-8">
+        <div class="app-container">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-3">PLU-AI</h3>
+                    <p class="text-neutral-300 text-sm md:text-base">Une application pour simplifier la compréhension des règles d'urbanisme grâce à l'intelligence artificielle.</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold mb-3 mt-4 md:mt-0">Liens utiles</h3>
+                    <ul class="space-y-1 md:space-y-2 text-sm md:text-base">
+                        <li><a href="#" class="text-neutral-300 hover:text-white transition-colors">À propos</a></li>
+                        <li><a href="#" class="text-neutral-300 hover:text-white transition-colors">Mentions légales</a></li>
+                        <li><a href="#" class="text-neutral-300 hover:text-white transition-colors">Politique de confidentialité</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold mb-3 mt-4 md:mt-0">Contact</h3>
+                    <p class="text-neutral-300 mb-3 text-sm md:text-base">Des questions ou des suggestions ? N'hésitez pas à nous contacter.</p>
+                    <a href="#" class="btn btn-primary text-sm md:text-base py-2 px-4">
+                        <i class="fas fa-envelope mr-2"></i>
+                        Nous contacter
+                    </a>
+                </div>
+            </div>
+            <div class="border-t border-neutral-700 mt-6 md:mt-8 pt-6 md:pt-8 text-center text-neutral-400 text-sm">
+                <p>© 2025 PLU-AI. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+</div>
+
+{% endblock %}

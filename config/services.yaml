@@ -4,6 +4,14 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    app.adresse_api_url: '%env(ADRESSE_API_URL)%'
+    app.cadastre_api_url: '%env(CADASTRE_API_URL)%'
+    app.cadastre_api_key: '%env(CADASTRE_API_KEY)%'
+    app.gpu_api_url: '%env(GPU_API_URL)%'
+    app.geoportail_api_url: '%env(GEOPORTAIL_API_URL)%'
+    app.openai_api_key: '%env(default::AI_API_KEY)%'
+    app.ai_base_url: '%env(AI_BASE_URL)%'
+    app.ai_model: '%env(AI_MODEL)%'
 
 services:
     # default configuration for services in *this* file
@@ -15,6 +23,8 @@ services:
     # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
+
+    # ProcessAnalysisQueueCommand uses autowiring with Autowire attribute
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
